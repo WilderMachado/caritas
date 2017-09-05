@@ -13,6 +13,7 @@ window.onload = function () {
         btnAdicionarEmail.addEventListener("click", adicionarEmail);
     }
     adicionarFuncaoExcluir();
+    adicionarFuncaoBuscar();
     tipoTelefone = criarTipoTelefone();
 };
 
@@ -83,7 +84,7 @@ function adicionarEmail() {
     var divForm = criarElemento("div", {"class": "form-group"});
     var lblEmail = criarElemento("label", {"class": "control-label col-xs-2"});
     lblEmail.appendChild(document.createTextNode("E-mail: "));
-    var indice = "emails[".concat(indiceEmail).concat("][email]")
+    var indice = "emails[".concat(indiceEmail).concat("][email]");
     lblEmail.setAttribute("for", indice);
     divForm.appendChild(lblEmail);
     var divCol = criarElemento("div", {"class": "col-xs-5"});
@@ -122,6 +123,40 @@ function criarTipoTelefone() {
         tiposTelefone[tipos.item(i).value] = tipos.item(i).name;
     }
     return tiposTelefone;
+}
+
+function adicionarFuncaoBuscar() {
+    var listaBuscar = document.getElementsByClassName("btn-buscar");
+
+    for (var i = 0; i < listaBuscar.length; i++) {
+        listaBuscar.item(i).addEventListener("click", function () {
+            buscar(this.value);
+        });
+    }
+}
+function buscar(caminho) {
+    var xhttp = criarXHTTP();
+    xhttp.onreadystatechange = function () {
+        if (xhttp.readyState == 4 && xhttp.status == 200) {
+            var texto = xhttp.responseText;
+            alert(texto);
+        }
+    };
+    xhttp.open("GET",caminho , true);
+    xhttp.send();
+}
+function criarXHTTP() {
+    var xhttp = null;
+    if (window.XMLHttpRequest) {
+        xhttp = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        try {
+            xhttp = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch (e) {
+            xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+    }
+    return xhttp;
 }
 //,'onkeypress'=>'return event.charCode >= 48 && event.charCode <= 57'
 //onkeypress="if (!isNaN(String.fromCharCode(window.event.keyCode))) return true; else return false;"

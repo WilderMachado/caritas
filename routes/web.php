@@ -26,6 +26,8 @@ Route::group(['prefix' => 'instituicoes', 'where' => ['id' => '[0-9]+']], functi
     Route::get('{id}/editar', ['as' => 'instituicoes.editar', 'uses' => 'InstituicaoController@editar']);
     Route::put('{id}/alterar', ['as' => 'instituicoes.alterar', 'uses' => 'InstituicaoController@alterar']);
     Route::get('{id}/excluir', ['as' => 'instituicoes.excluir', 'uses' => 'InstituicaoController@excluir']);
+    Route::get('{id}/detalhar', ['as' => 'instituicoes.detalhar', 'uses' => 'InstituicaoController@detalhar']);
+    Route::get('{id}/membros', ['as' => 'instituicoes.membros', 'uses' => 'InstituicaoController@membros']);
 });
 
 Route::group(['prefix' => 'membros', 'where' => ['id' => '[0-9]+']], function () {
@@ -35,4 +37,5 @@ Route::group(['prefix' => 'membros', 'where' => ['id' => '[0-9]+']], function ()
     Route::get('{id}/editar', ['as' => 'membros.editar', 'uses' => 'MembroController@editar']);
     Route::put('{id}/alterar', ['as' => 'membros.alterar', 'uses' => 'MembroController@alterar']);
     Route::get('{id}/excluir', ['as' => 'membros.excluir', 'uses' => 'MembroController@excluir']);
+    Route::get('{id}/detalhar', ['as' => 'membros.detalhar', 'uses' => 'MembroController@detalhar']);
 });

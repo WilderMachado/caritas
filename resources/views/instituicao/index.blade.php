@@ -23,6 +23,12 @@
                     @endforeach
                 </td>
                 <td>
+                    <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('instituicoes.detalhar', ['id'=>$instituicao->id])}}">
+                        Detalhes
+                    </button>
+                    <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('instituicoes.membros', ['id'=>$instituicao->id])}}">
+                        Membros
+                    </button>
                     <a class="btn btn-success" title="Editar"
                        href="{{ route('instituicoes.editar', ['id'=>$instituicao->id]) }}">
                         Editar

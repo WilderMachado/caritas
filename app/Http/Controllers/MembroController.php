@@ -8,7 +8,6 @@ use caritas\Http\Requests\MembroRequest;
 use caritas\Instituicao;
 use caritas\Membro;
 use caritas\Telefone;
-use Illuminate\Http\Request;
 
 class MembroController extends Controller
 {
@@ -77,6 +76,11 @@ class MembroController extends Controller
         return redirect('membros');
     }
 
+    public function detalhar($id)
+    {
+        return response($this->montarResposta(Membro::with('instituicao', 'endereco', 'telefones', 'emails')->find($id)));
+    }
+
     private function atualizarTelefones(Membro $membro, $telefones)
     {
         foreach ($membro->telefones as $i => $telefone):
@@ -117,5 +121,26 @@ class MembroController extends Controller
             $membro->emails->get($i)->update($email);
         endforeach;
         Email::destroy(array_slice($membro->emails->toArray(), count($emails)));
+    }
+
+    private function montarResposta(Membro $membro)
+    {
+        $resposta = "Nome: $membro->nome"
+            . "\nInstituição: " . $membro->instituicao->nome
+            . "\nCargo:  $membro->cargo"
+            . "\nEndereço"
+            . "\nLogradouro: " . $membro->endereco->logradouro
+            . "\nNúmero: " . $membro->endereco->numero
+            . "\nComplemento: " . $membro->endereco->complemento
+            . "\nBairro: " . $membro->endereco->bairro
+            . "\nCidade: " . $membro->endereco->cidade
+            . "-" . $membro->endereco->uf;
+        foreach ($membro->telefones as $telefone):
+            $resposta .= "\nTelefone: ($telefone->ddd)$telefone->numero";
+        endforeach;
+        foreach ($membro->emails as $email):
+            $resposta .= "\nE-mail: $email->email";
+        endforeach;
+        return $resposta;
     }
 }

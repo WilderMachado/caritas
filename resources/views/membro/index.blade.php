@@ -25,6 +25,9 @@
                 </td>
                 <td>{{$membro->instituicao->nome}}</td>
                 <td>
+                    <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('membros.detalhar', ['id'=>$membro->id])}}">
+                        Detalhes
+                    </button>
                     <a class="btn btn-success" title="Editar"
                        href="{{ route('membros.editar', ['id'=>$membro->id]) }}">
                         Editar
