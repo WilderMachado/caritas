@@ -26,7 +26,7 @@
                     <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('instituicoes.detalhar', ['id'=>$instituicao->id])}}">
                         Detalhes
                     </button>
-                    <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('instituicoes.membros', ['id'=>$instituicao->id])}}">
+                    <button class="btn btn-primary btn-buscar" title="Membros" value="{{route('instituicoes.membros', ['id'=>$instituicao->id])}}">
                         Membros
                     </button>
                     <a class="btn btn-success" title="Editar"
