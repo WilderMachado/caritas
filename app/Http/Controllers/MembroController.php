@@ -45,10 +45,10 @@ class MembroController extends Controller
         $membro->endereco()->associate($endereco);                                  //Associa endereço a membro
         $membro->save();                                                            //Salva membro
         if ($request->get('telefones.ddd') && $request->get('telefones.numero')):   //Verifica se foi passado algum telefone
-            $membro->telefones()->create($request->telefone);                       //Cria telefones
+            $membro->telefones()->create($request->telefones);                       //Cria telefones
         endif;
         if ($request->get('emails.email')):                                         //Verifica se foi passado algum e-mail
-            $membro->emails()->create($request->email);                             //Cria e-mails
+            $membro->emails()->create($request->emails);                             //Cria e-mails
         endif;
         return redirect('membros');                                                 //Redireciona para página inicial de membros
     }

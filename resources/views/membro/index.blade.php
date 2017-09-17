@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+    <h1>Membros</h1>
     {{$membros->links()}}
     <table class="table">
         <thead>
@@ -25,16 +26,17 @@
                 </td>
                 <td>{{$membro->instituicao->nome}}</td>
                 <td>
-                    <button class="btn btn-primary btn-buscar" title="Detalhes" value="{{route('membros.detalhar', ['id'=>$membro->id])}}">
-                        Detalhes
+                    <button class="btn btn-info btn-buscar" title="Detalhes" value="{{route('membros.detalhar', ['id'=>$membro->id])}}">
+                        <em class="glyphicon glyphicon-eye-open"></em>
                     </button>
                     <a class="btn btn-success" title="Editar"
                        href="{{ route('membros.editar', ['id'=>$membro->id]) }}">
-                        Editar
+                        <em class="glyphicon glyphicon-edit"></em>
                     </a>
                     <a class="btn btn-danger btn-excluir" title="Excluir"
                        href="{{ route('membros.excluir', ['id'=>$membro->id]) }}">
-                        Excluir
+                        <em class="glyphicon glyphicon-remove"></em>
+
                     </a>
                 </td>
             </tr>

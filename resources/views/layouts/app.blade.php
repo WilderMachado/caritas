@@ -7,16 +7,19 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="shortcut icon" href="images/logo_caritas_pequeno.ico" type="image/x-icon" />
+    <title> {{ config('app.name', 'Laravel') }}</title>
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
 </head>
 <body>
 <div id="app">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container">
+
             <div class="navbar-header">
 
                 <!-- Collapsed Hamburger -->
@@ -26,12 +29,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
+
                 </button>
 
                 <!-- Branding Image -->
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+
+                <a href="{{ url('/') }}">
+                    <img src="images/logo_caritas_micro.jpg"/>
                 </a>
+
             </div>
             <div class="collapse navbar-collapse" id="app-navbar-collapse">
                 <!-- Left Side Of Navbar -->
