@@ -2,12 +2,12 @@
 
 namespace caritas\Http\Controllers;
 
-use caritas\Email;
 use caritas\Endereco;
+use caritas\Http\Helpers\EmailHelper;
+use caritas\Http\Helpers\TelefoneHelper;
 use caritas\Http\Requests\MembroRequest;
 use caritas\Instituicao;
 use caritas\Membro;
-use caritas\Telefone;
 
 /**
  * Class MembroController classe responsável por interação com opções de Membros
@@ -20,7 +20,7 @@ class MembroController extends Controller
      */
     public function index()
     {
-        $membros = Membro::with('instituicao', 'telefones', 'emails')   //Busca membros
+        $membros = Membro::with('instituicao', 'telefones', 'emails')//Busca membros
         ->orderBy('nome')->paginate(config('constantes.paginacao'));    //Ordena por nome e realiza paginação
         return view('membro.index', compact('membros'));                //Redireciona para página inicial de membros
     }
@@ -40,17 +40,19 @@ class MembroController extends Controller
      */
     public function salvar(MembroRequest $request)
     {
-        $endereco = Endereco::create($request->endereco);                           //Cria endereço
-        $membro = new Membro($request->all());                                      //Instancia novo membro com dados passados
-        $membro->endereco()->associate($endereco);                                  //Associa endereço a membro
-        $membro->save();                                                            //Salva membro
-        if ($request->get('telefones.ddd') && $request->get('telefones.numero')):   //Verifica se foi passado algum telefone
-            $membro->telefones()->create($request->telefones);                       //Cria telefones
+        $endereco = Endereco::create($request->endereco);           //Cria endereço
+        $membro = new Membro($request->all());                      //Instancia novo membro com dados passados
+        $membro->endereco()->associate($endereco);                  //Associa endereço a membro
+        $membro->save();                                            //Salva membro
+        $telefones = TelefoneHelper::filtar($request->telefones);   //Realiza filtragem de telefones recebidos e passa para variável
+        if (!empty($telefones)):                                    //Verifica se relação de telefones não está vazia
+            $membro->telefones()->createMany($telefones);           //Cria telefones
         endif;
-        if ($request->get('emails.email')):                                         //Verifica se foi passado algum e-mail
-            $membro->emails()->create($request->emails);                             //Cria e-mails
+        $emails = EmailHelper::filtar($request->emails);            //Realiza filtragem de e-mails recebidos e passa para variável
+        if (!empty($emails)):                                       //Verifica se relação de e-mails não está vazia
+            $membro->emails()->createMany($emails);                 //Cria e-mails
         endif;
-        return redirect('membros');                                                 //Redireciona para página inicial de membros
+        return redirect('membros');                                 //Redireciona para página inicial de membros
     }
 
     /**Método para edição de membro
@@ -73,21 +75,21 @@ class MembroController extends Controller
     {
         $membro = Membro::with('instituicao', 'endereco', 'telefones', 'emails')->find($id);//Busca membro
         $membro->endereco->update($request->endereco);                                      //Altera endereço
-        $telefones = array_values($request->telefones);                                     //Passa para variável relação de telefones
+        $telefones = TelefoneHelper::filtar($request->telefones);                           //Realiza filtragem de telefones recebidos e passa para variável
         if (count($telefones) == $membro->telefones->count()):                              //Verifica se quantidade de telefones é a mesma
-            $this->atualizarTelefones($membro, $telefones);                                 //Atualiza dados de telefones por meio do método atualizarTelefones
+            TelefoneHelper::atualizar($membro, $telefones);                                 //Atualiza dados de telefones por meio do método atualizar da classe TelefoneHelper
         elseif (count($telefones) > $membro->telefones->count()):                           //Se quantidade de telefone aumentou
-            $this->aumentarTelefones($membro, $telefones);                                  //Aumenta os telefones por meio do método aumentarTelefeones
+            TelefoneHelper::aumentar($membro, $telefones);                                  //Aumenta os telefones por meio do método aumentar da classe TelefoneHelper
         else:                                                                               //Caso quantidade de telefones tenha diminuido
-            $this->diminuirTelefones($membro, $telefones);                                  //Diminui os telefones com o método diminuirTelefones
+            TelefoneHelper::diminuir($membro, $telefones);                                  //Diminui os telefones com o método diminuir da classe TelefoneHelper
         endif;
-        $emails = array_values($request->emails);                                           //Passa para variável relação de e-mail
+        $emails = EmailHelper::filtar($request->emails);                                    //Realiza filtragem de e-mails recebidos e passa para variável
         if (count($emails) == $membro->emails->count()):                                    //Verifica se quantidade de e-mail é a mesma
-            $this->atualizarEmails($membro, $emails);                                       //Atualiza dados de e-mails por meio do método atualizarEmails
+            EmailHelper::atualizar($membro, $emails);                                       //Atualiza dados de e-mails por meio do método atualizar da classe EmailHelper
         elseif (count($emails) > $membro->emails->count()):                                 //Se quantidade de e-mail aumentou
-            $this->aumentarEmails($membro, $emails);                                        //Aumenta os e-mails por meio do método aumentarEmails
+            EmailHelper::aumentar($membro, $emails);                                        //Aumenta os e-mails por meio do método aumentar da classe EmailHelper
         else:                                                                               //Caso quantidade de e-mail tenha diminuido
-            $this->diminuirEmails($membro, $emails);                                        //Diminui os e-mails com o método diminuirEmails
+            EmailHelper::diminuir($membro, $emails);                                        //Diminui os e-mails com o método diminuir da classe EmailHelper
         endif;
         $membro->update($request->all());                                                   //Atualiza dados do membro
         return redirect('membros');                                                         //Redireciona para página inicial de membros
@@ -111,77 +113,6 @@ class MembroController extends Controller
     {
         //Busca membro pelo id e repassa para método montarResposta formar o texto e retorna os dados
         return response($this->montarResposta(Membro::with('instituicao', 'endereco', 'telefones', 'emails')->find($id)));
-    }
-
-    /**Método privado para atualizar dados de telefones
-     * @param Membro $membro dono dos telefones
-     * @param array $telefones relação de telefones
-     */
-    private function atualizarTelefones(Membro $membro, $telefones)
-    {
-        foreach ($membro->telefones as $i => $telefone)://Percorre relação de telefones do membro
-            $telefone->update($telefones[$i]);          //Altera dados
-        endforeach;
-    }
-
-    /**Método privado que aumenta relação de telefones
-     * @param Membro $membro dono dos telefones
-     * @param array $telefones relação de telefones
-     */
-    private function aumentarTelefones(Membro $membro, $telefones)
-    {
-        //Atualiza telefones já existente, por meio do método atualizarTelefones (até o número já existente)
-        $this->atualizarTelefones($membro, array_slice($telefones, 0, $membro->telefones->count()));
-        //Cria novos telefones (a partir da quantidade existente)
-        $membro->telefones()->createMany(array_slice($telefones, $membro->telefones->count()));
-    }
-
-    /**Método privado que reduz relação de telefones
-     * @param Membro $membro dono dos telefones
-     * @param array $telefones relação de telefones
-     */
-    private function diminuirTelefones(Membro $membro, $telefones)
-    {
-        foreach ($telefones as $i => $telefone):                                            //Percorre relação de telefones passada
-            $membro->telefones->get($i)->update($telefone);                                 //Atualiza telefones já existentes
-        endforeach;
-        Telefone::destroy(array_slice($membro->telefones->toArray(), count($telefones)));   //Exclui telefones sobrando
-    }
-
-    /**Método privado que atualiza dados de e-mails
-     * @param Membro $membro dono dos e-mails
-     * @param array $emails relação de e-mails
-     */
-    private function atualizarEmails(Membro $membro, $emails)
-    {
-        foreach ($membro->emails as $i => $email):  //Percorre relação de e-mails do membro
-            $email->update($emails[$i]);            //Altera dados
-        endforeach;
-    }
-
-    /**Método privado que aumenta relação de e-mails
-     * @param Membro $membro dono dos e-mails
-     * @param array $emails relação de e-mails
-     */
-    private function aumentarEmails(Membro $membro, $emails)
-    {
-        //Atualiza e-mails já existente, por meio do método atualizarEmails (até o número já existente)
-        $this->atualizarEmails($membro, array_slice($emails, 0, $membro->emails->count()));
-        //Cria novos e-mails (a partir da quantidade existente)
-        $membro->emails()->createMany(array_slice($emails, $membro->emails->count()));
-    }
-
-    /**Método privado que reduz relação de e-mails
-     * @param Membro $membro dono dos e-mails
-     * @param array $emails relação de e-mails
-     */
-
-    private function diminuirEmails(Membro $membro, $emails)
-    {
-        foreach ($emails as $i => $email):                                      //Percorre relação de e-mail passada
-            $membro->emails->get($i)->update($email);                           //Atualiza e-mail já existentes
-        endforeach;
-        Email::destroy(array_slice($membro->emails->toArray(), count($emails)));//Exclui e-mails sobrando
     }
 
     /**Método privado que monta resposta com dados de membro em forma de texto

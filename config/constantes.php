@@ -11,6 +11,10 @@ return [
         'fixo' => 'Fixo',
         'celular' => 'Celular'
     ],
+    'tipoUsuario'=>[
+        'comum'=>'Comum',
+        'admin'=>'Administrador'
+    ],
     'uf' => [
         'AC' => 'Acre',
         'AL' => 'Alagoas',

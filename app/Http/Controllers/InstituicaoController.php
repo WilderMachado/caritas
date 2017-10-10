@@ -2,11 +2,11 @@
 
 namespace caritas\Http\Controllers;
 
-use caritas\Email;
 use caritas\Endereco;
+use caritas\Http\Helpers\EmailHelper;
+use caritas\Http\Helpers\TelefoneHelper;
 use caritas\Http\Requests\InstituicaoRequest;
 use caritas\Instituicao;
-use caritas\Telefone;
 
 /**
  * Class InstituicaoController Classe responsável por interação de opções de Instituições
@@ -19,7 +19,7 @@ class InstituicaoController extends Controller
      */
     public function index()
     {
-        $instituicoes = Instituicao::orderBy('nome')                //Busca instituições e ordena por nome
+        $instituicoes = Instituicao::orderBy('nome')//Busca instituições e ordena por nome
         ->paginate(config('constantes.paginacao'));                 //Realiza paginação do resultado
         return view('instituicao.index', compact('instituicoes'));  //Redireciona para página inicial de instituições
     }
@@ -38,17 +38,19 @@ class InstituicaoController extends Controller
      */
     public function salvar(InstituicaoRequest $request)
     {
-        $endereco = Endereco::create($request->endereco);                           //Cria endereço
-        $instituicao = new Instituicao($request->all());                            //Instancia nova instituição com dados passados
-        $instituicao->endereco()->associate($endereco);                             //Associa endereço a instituição
-        $instituicao->save();                                                       //Salva instituição
-        if ($request->get('telefones.ddd') && $request->get('telefones.numero')):   //Verifica se foi passado algum telefone
-            $instituicao->telefones()->createMany($request->telefones);             //Cria telefones
+        $endereco = Endereco::create($request->endereco);           //Cria endereço
+        $instituicao = new Instituicao($request->all());            //Instancia nova instituição com dados passados
+        $instituicao->endereco()->associate($endereco);             //Associa endereço a instituição
+        $instituicao->save();                                       //Salva instituição
+        $telefones = TelefoneHelper::filtar($request->telefones);   //Realiza filtragem de telefones recebidos e passa para variável
+        if (!empty($telefones)):                                    //Verifica se relação de telefones não está vazia
+            $instituicao->telefones()->createMany($telefones);      //Cria telefone
         endif;
-        if ($request->get('emails.email')):                                         //Verifica se foi passado algum e-mail
-            $instituicao->emails()->createMany($request->emails);                   //Cria e-mails
+        $emails = EmailHelper::filtar($request->emails);            //Realiza filtragem de e-mails recebidos e passa para variável
+        if (!empty($emails)):                                       //Verifica se relação de e-mails não está vazia
+            $instituicao->emails()->createMany($emails);            //Cria e-mails
         endif;
-        return redirect('instituicoes');                                            //Redireciona para página inicial de instituições
+        return redirect('instituicoes');                            //Redireciona para página inicial de instituições
     }
 
     /** Método para edição de instituição
@@ -70,21 +72,21 @@ class InstituicaoController extends Controller
     {
         $instituicao = Instituicao::with('endereco', 'telefones', 'emails')->find($id); //Busca instituição
         $instituicao->endereco()->update($request->endereco);                           //Altera endereço
-        $telefones = array_values($request->telefones);                                 //Passa para variável relação de telefones da edição
+        $telefones = TelefoneHelper::filtar($request->telefones);                       //Realiza filtragem de telefones recebidos e passa para variável
         if (count($telefones) == $instituicao->telefones->count()):                     //Verifica se quantidade de telefones é a mesma
-            $this->atualizarTelefones($instituicao, $telefones);                        //Atualiza dados de telefones por meio do método atualizarTelefones
+            TelefoneHelper::atualizar($instituicao, $telefones);                        //Atualiza dados de telefones por meio do método atualizar da classe TelefoneHelper
         elseif (count($telefones) > $instituicao->telefones->count()):                  //Se quantidade de telefones aumentou
-            $this->aumentarTelefones($instituicao, $telefones);                         //Aumenta os telefones por meio do método aumentarTelefones
+            TelefoneHelper::aumentar($instituicao, $telefones);                         //Aumenta os telefones por meio do método aumentar da classe TelefoneHelper
         else:                                                                           //Caso quantidade de telefones tenha diminuido
-            $this->diminuirTelefones($instituicao, $telefones);                         //Diminui os telefones com o método diminuirTelefones
+            TelefoneHelper::diminuir($instituicao, $telefones);                         //Diminui os telefones com o método diminuir da classe TelefoneHelper
         endif;
-        $emails = array_values($request->emails);                                       //Passa para variável relação de e-mails da edição
+        $emails = EmailHelper::filtar($request->emails);                                //Realiza filtragem de e-mails recebidos e passa para variável
         if (count($emails) == $instituicao->emails->count()):                           //Verifica se quantidade de e-mail é a mesma
-            $this->atualizarEmails($instituicao, $emails);                              //Atualiza dados de e-mail por meio do método atualizarEmails
+            EmailHelper::atualizar($instituicao, $emails);                              //Atualiza dados de e-mail por meio do método atualizar da classe EmailHelper
         elseif (count($emails) > $instituicao->emails->count()):                        //Se quantidade de e-mail aumentou
-            $this->aumentarEmails($instituicao, $emails);                               //Aumento os e-mail por meio do método aumentarEmails
+            EmailHelper::aumentar($instituicao, $emails);                               //Aumento os e-mail por meio do método aumentar da classe EmailHelper
         else:                                                                           //Caso quantidade de e-mails tenha diminuido
-            $this->diminuirEmails($instituicao, $emails);                               //Diminui os e-mail com o método diminuirEmails
+            EmailHelper::diminuir($instituicao, $emails);                               //Diminui os e-mail com o método diminuir da classe EmailHelper
         endif;
         $instituicao->update($request->all());                                          //Atualiza dados da instituição
         return redirect('instituicoes');                                                //Redireciona para página inicial de instituições
@@ -124,76 +126,6 @@ class InstituicaoController extends Controller
             $resposta .= "\n$membro->nome";                     //Inclui na resposta nome dos membros da instituição
         endforeach;
         return response($resposta);                             //Retorna resposta
-    }
-
-    /**Método privado que atualiza dados de telefones
-     * @param Instituicao $instituicao dona dos telefones
-     * @param array $telefones relação de telefones
-     */
-    private function atualizarTelefones(Instituicao $instituicao, $telefones)
-    {
-        foreach ($instituicao->telefones as $i => $telefone):   //Percorre relação de telefones da instituição
-            $telefone->update($telefones[$i]);                  //Altera dados
-        endforeach;
-    }
-
-    /**Método privado que aumenta relação de telefones
-     * @param Instituicao $instituicao dona dos telefones
-     * @param array $telefones relação de telefones
-     */
-    private function aumentarTelefones(Instituicao $instituicao, $telefones)
-    {
-        //Atualiza telefones já existente, por meio do método atualizarTelefones (até o número já existente)
-        $this->atualizarTelefones($instituicao, array_slice($telefones, 0, $instituicao->telefones->count()));
-        //Cria novos telefones (a partir da quantidade existente)
-        $instituicao->telefones()->createMany(array_slice($telefones, $instituicao->telefones->count()));
-    }
-
-    /**Método privado que reduz relação de telefones
-     * @param Instituicao $instituicao dona dos telefones
-     * @param array $telefones relação de telefenes
-     */
-    private function diminuirTelefones(Instituicao $instituicao, $telefones)
-    {
-        foreach ($telefones as $i => $telefone):                                                //Percorre relação de telefones passada
-            $instituicao->telefones->get($i)->update($telefone);                                //Atualiza telefones já existentes
-        endforeach;
-        Telefone::destroy(array_slice($instituicao->telefones->toArray(), count($telefones)));  //Exclui telefones sobrando
-    }
-
-    /**Método privado que atualiza dados de e-mails
-     * @param Instituicao $instituicao dona dos e-mail
-     * @param array $emails relação de e-mails
-     */
-    private function atualizarEmails(Instituicao $instituicao, $emails)
-    {
-        foreach ($instituicao->emails as $i => $email): //Percorre relação de e-mails da instituição
-            $email->update($emails[$i]);                //Altera dados
-        endforeach;
-    }
-
-    /** Método privado que aumenta relação de e-mail
-     * @param Instituicao $instituicao dona dos e-mails
-     * @param array $emails relação de e-mails
-     */
-    private function aumentarEmails(Instituicao $instituicao, $emails)
-    {
-        //Atualiza e-mails já existente, por meio do método atualizarEmails (até o número já existente)
-        $this->atualizarEmails($instituicao, array_slice($emails, 0, $instituicao->emails->count()));
-        //Cria novos e-mails (a partir da quantidade existente)
-        $instituicao->emails()->createMany(array_slice($emails, $instituicao->emails->count()));
-    }
-
-    /**Método privado que reduz relação de e-mails
-     * @param Instituicao $instituicao dona dos e-mails
-     * @param array $emails relação de e-mails
-     */
-    private function diminuirEmails(Instituicao $instituicao, $emails)
-    {
-        foreach ($emails as $i => $email):                                              //Percorre relação de e-mails passada
-            $instituicao->emails->get($i)->update($email);                              //Atualiza e-mails já existentes
-        endforeach;
-        Email::destroy(array_slice($instituicao->emails->toArray(), count($emails)));   //Exclui e-mail sobrando
     }
 
     /**Método privado que monta resposta com dados da instituição em forma de texto

@@ -35,16 +35,23 @@
                 <!-- Branding Image -->
 
                 <a href="{{ url('/') }}">
-                    <img src="images/logo_caritas_micro.jpg"/>
+                    <img src="images/logo_caritas_micro.jpg" alt="Logo marca da Cáritas"/>
                 </a>
 
             </div>
-            <div class="collapse navbar-collapse" id="app-navbar-collapse">
+            <div class="collapse navbar-collapse" id="navbar">
                 <!-- Left Side Of Navbar -->
                 <ul class="nav navbar-nav">
                     &nbsp;
+                    @can('visualizar','caritas\Instituicao')
                     <li><a href="{{route('instituicoes')}}">Instituições</a></li>
+                    @endcan
+                    @can('visualizar','caritas\Membro')
                     <li><a href="{{route('membros')}}">Membros</a></li>
+                    @endcan
+                    @can('visualizar','caritas\User')
+                    <li><a href="{{route('users')}}">Usuários</a></li>
+                    @endcan
                 </ul>
 
                 <!-- Right Side Of Navbar -->
@@ -52,7 +59,7 @@
                     <!-- Authentication Links -->
                     @if (Auth::guest())
                         <li><a href="{{ route('login') }}">Login</a></li>
-                        <li><a href="{{ route('register') }}">Registrar</a></li>
+
                     @else
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
@@ -80,9 +87,9 @@
             </div>
         </div>
     </nav>
-
+<div class="container">
     @yield('content')
-
+</div>
 </div>
 
 <!-- Scripts -->

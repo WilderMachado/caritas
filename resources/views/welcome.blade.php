@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link rel="shortcut icon" href="images/logo_caritas_pequeno.ico" type="image/x-icon"/>
     <title>CDE</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+
 
     <!-- Styles -->
     <style>
@@ -62,6 +63,11 @@
         .m-b-md {
             margin-bottom: 30px;
         }
+
+        a.link {
+            color: #636b6f;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -72,25 +78,29 @@
                 <a href="{{ url('/home') }}">Home</a>
             @else
                 <a href="{{ url('/login') }}">Login</a>
-                <a href="{{ url('/register') }}">Register</a>
             @endif
         </div>
     @endif
 
     <div class="content">
-        <div class="title m-b-md">
-            Cáritas Diocesana de Eunápolis
+        <div class="title m-b-md flex-center">
+            <img src="images/logo_caritas_grande.PNG" alt="Logomarca grande da Cáritas"/>
         </div>
-        {{--
-                        <div class="links">
-                            <a href="https://laravel.com/docs">Documentation</a>
-                            <a href="https://laracasts.com">Laracasts</a>
-                            <a href="https://laravel-news.com">News</a>
-                            <a href="https://forge.laravel.com">Forge</a>
-                            <a href="https://github.com/laravel/laravel">GitHub</a>
-                        </div>
-                        --}}
+        @if (Auth::guest())
+            <h2>Esse é o Sistema de Cadastro da <strong><em>Cáritas</em> Diocesana de Eunápolis</strong>.</h2>
+            <h3>Para acessá-lo é preciso fazer o <a class="link" title="Login" href="{{ url('/login') }}">Login</a>.
+            </h3>
+        @endif
     </div>
+    {{--
+                    <div class="links">
+                        <a href="https://laravel.com/docs">Documentation</a>
+                        <a href="https://laracasts.com">Laracasts</a>
+                        <a href="https://laravel-news.com">News</a>
+                        <a href="https://forge.laravel.com">Forge</a>
+                        <a href="https://github.com/laravel/laravel">GitHub</a>
+                    </div>
+                    --}}
 </div>
 </body>
 </html>

@@ -34,7 +34,7 @@ class InstituicaoRequest extends FormRequest
             'telefones.*.ddd' => 'integer|nullable|digits:2|required_with:telefones.*.numero,telefones.*.tipo',
             'telefones.*.numero' => 'integer|nullable|digits_between:8,9|required_with:telefones.*.ddd,telefones.*.tipo',
             'telefones.*.tipo' => 'required_with:telefones.*.ddd,telefones.*.numero',
-            'emails.*.email' => 'email|nullable',
+            'emails.*.email' => 'email|distinct|nullable',
         ];
     }
 

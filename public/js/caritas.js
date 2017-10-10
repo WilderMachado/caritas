@@ -38,23 +38,30 @@ function adicionarFuncaoExcluir() {
 function adicionarTelefone() {
     var divForm = criarElemento("div", {"class": "form-group"});
     var indice = "telefones[".concat(indiceTelefone).concat("][ddd]");
-    var lblTelefone = criarElemento("label", {"class": "control-label col-xs-2", "for": indice});
+    var lblTelefone = criarElemento("label", {"class": "control-label col-xs-2 col-md-3", "for": indice});
     lblTelefone.appendChild(document.createTextNode("Telefone: "));
     divForm.appendChild(lblTelefone);
-    var divColDDD = criarElemento("div", {"class": "col-xs-1"});
-    var txtDDD = criarElemento("input", {"class": "form-control", "name": indice, "id": indice, "placeholder": "DDD"});
+    var divColDDD = criarElemento("div", {"class": "col-xs-1 col-md-1"});
+    var txtDDD = criarElemento("input", {
+        "class": "form-control",
+        "name": indice,
+        "id": indice,
+        "placeholder": "DDD",
+        "maxlength": 2
+    });
     divColDDD.appendChild(txtDDD);
     indice = indice.replace("ddd", "numero");
-    var divColNumero = criarElemento("div", {"class": "col-xs-2"});
+    var divColNumero = criarElemento("div", {"class": "col-xs-2 col-md-3"});
     var txtNumero = criarElemento("input", {
         "class": "form-control",
         "name": indice,
         "id": indice,
-        "placeholder": "Número"
+        "placeholder": "Número",
+        "maxlength": 9
     });
     divColNumero.appendChild(txtNumero);
     indice = indice.replace("numero", "tipo");
-    var divColTipo = criarElemento("div", {"class": "col-xs-2"});
+    var divColTipo = criarElemento("div", {"class": "col-xs-2 col-md-2"});
     var selTipo = criarElemento("select", {"class": "form-control", "name": indice, "id": indice});
     var opcao = criarOpcao("Tipo", {"value": "", "disabled": true, "selected": true, "hidden": true});
     selTipo.appendChild(opcao);
@@ -66,8 +73,8 @@ function adicionarTelefone() {
     divForm.appendChild(divColNumero);
     divForm.appendChild(divColTipo);
     indiceTelefone++;
-    var btnExcluir = criarElemento("button", {"class": "btn btn-danger  btn-remover-telefone"});
-    btnExcluir.appendChild(document.createTextNode("-"));
+    var btnExcluir = criarElemento("button", {"class": "btn btn-danger  btn-remover-telefone glyphicon glyphicon-remove"});
+    //btnExcluir.appendChild(document.createTextNode("-"));
     btnExcluir.addEventListener("click", function () {
         remover(this);
     });
@@ -82,18 +89,18 @@ function remover(elemento) {
 
 function adicionarEmail() {
     var divForm = criarElemento("div", {"class": "form-group"});
-    var lblEmail = criarElemento("label", {"class": "control-label col-xs-2"});
+    var lblEmail = criarElemento("label", {"class": "control-label col-xs-2 col-md-3"});
     lblEmail.appendChild(document.createTextNode("E-mail: "));
     var indice = "emails[".concat(indiceEmail).concat("][email]");
     lblEmail.setAttribute("for", indice);
     divForm.appendChild(lblEmail);
-    var divCol = criarElemento("div", {"class": "col-xs-5"});
+    var divCol = criarElemento("div", {"class": "col-xs-5 col-md-6"});
     var txtEmail = criarElemento("input", {"class": "form-control", "name": indice, "id": indice});
     divCol.appendChild(txtEmail);
     indiceEmail++;
     divForm.appendChild(divCol);
-    var btnExcluir = criarElemento("button", {"class": "btn btn-danger  btn-remover-email"});
-    btnExcluir.appendChild(document.createTextNode("-"));
+    var btnExcluir = criarElemento("button", {"class": "btn btn-danger  btn-remover-email glyphicon glyphicon-remove"});
+//    btnExcluir.appendChild(document.createTextNode("-"));
     btnExcluir.addEventListener("click", function () {
         remover(this);
     });
@@ -142,7 +149,7 @@ function buscar(caminho) {
             alert(texto);
         }
     };
-    xhttp.open("GET",caminho , true);
+    xhttp.open("GET", caminho, true);
     xhttp.send();
 }
 function criarXHTTP() {
